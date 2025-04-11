@@ -22,6 +22,28 @@
       letter-spacing: 1px;
     }
 
+    #todayBirthdays {
+      background: #fffbe6;
+      border-left: 6px solid #fbc02d;
+      border-radius: 12px;
+      margin: 2rem auto;
+      padding: 1rem;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    #todayBirthdays h3 {
+      margin-top: 0;
+      color: #a88700;
+    }
+
+    .today-entry {
+      margin-top: 0.5rem;
+      padding: 0.3rem 0;
+      font-weight: 500;
+      color: #444;
+    }
+
     .form-container {
       background: #ffffffcc;
       padding: 1rem;
@@ -123,6 +145,8 @@
 
 <header>Calendário Multiversal</header>
 
+<div id="todayBirthdays" class="container"></div>
+
 <div class="form-container">
   <input type="text" id="nameInput" placeholder="Nome">
   <input type="date" id="dateInput">
@@ -171,6 +195,31 @@
   function formatDateDMY(dateStr) {
     const [year, month, day] = dateStr.split("-");
     return `${day.padStart(2, '0')} / ${month.padStart(2, '0')} / ${year}`;
+  }
+
+  function renderTodayBirthdays() {
+    const todayDiv = document.getElementById("todayBirthdays");
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, "0");
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+
+    const todayList = Object.values(birthdays).filter(b => {
+      const [_, m, d] = b.date.split("-");
+      return m === month && d === day;
+    });
+
+    if (todayList.length === 0) {
+      todayDiv.innerHTML = "";
+      return;
+    }
+
+    todayDiv.innerHTML = `
+      <h3>🎉 Aniversariante${todayList.length > 1 ? "s" : ""} de hoje!</h3>
+      ${todayList.map(b => {
+        const age = calculateAge(b.date);
+        return `<div class="today-entry">🎂 ${b.name} – ${age} anos</div>`;
+      }).join("")}
+    `;
   }
 
   function renderCalendar() {
@@ -243,6 +292,7 @@
 
   onValue(ref(db, "birthdays"), snapshot => {
     birthdays = snapshot.val() || {};
+    renderTodayBirthdays();
     renderCalendar();
   });
 
